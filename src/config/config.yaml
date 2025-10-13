@@ -1,0 +1,21 @@
+# Configuration for the ML project
+# Example:
+# paths:
+#   raw_data: "data/raw/dataset.csv"
+#   processed_data: "data/processed/processed_data.parquet"
+#   model_output: "outputs/saved_models/"
+#   log_file: "logs/project.log"
+
+# model_params:
+#   random_state: 42
+#   test_size: 0.2
+
+# hyperparameters:
+#   sklearn_example:
+#     n_estimators: 100
+#     max_depth: 5
+#   pytorch_example:
+#     learning_rate: 0.001
+#     batch_size: 32
+#     epochs: 10
+

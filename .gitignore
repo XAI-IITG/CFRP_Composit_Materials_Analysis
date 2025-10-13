@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib60/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data & Models (if not using DVC/LFS - uncomment if you want to ignore)
+data/raw/Layup1/
+# data/processed/
+# data/external/
+# outputs/saved_models/
+
+# Secrets
+*.env
+secrets/
+credentials.*
+
+# Logs
+logs/
+*.log
+
+# Notebooks
+.ipynb_checkpoints
+
+# OS-specific
+.DS_Store
+Thumbs.db
+

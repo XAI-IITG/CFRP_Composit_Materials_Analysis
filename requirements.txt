@@ -1,0 +1,35 @@
+# Core ML Libraries (examples, adjust as needed)
+numpy
+pandas
+scikit-learn
+scipy
+matplotlib
+seaborn
+h5py
+
+# For PyTorch (choose appropriate CUDA version or CPU)
+# torch
+# torchvision
+# torchaudio
+
+# For LLMs (examples)
+# transformers
+# datasets
+# accelerate
+
+# For API (FastAPI example)
+# fastapi
+# uvicorn[standard]
+
+# For CLI (Typer example)
+# typer[all]
+
+# For UI (Streamlit example)
+# streamlit
+
+# Utilities
+# python-dotenv
+# pyyaml
+# loguru # or standard logging
+# pytest # for testing
+
