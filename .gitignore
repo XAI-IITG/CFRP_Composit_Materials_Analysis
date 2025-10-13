@@ -38,7 +38,7 @@ venv.bak/
 *.swo
 
 # Data & Models (if not using DVC/LFS - uncomment if you want to ignore)
-data/raw/Layup1/
+# data/raw/Layup1/
 # data/processed/
 # data/external/
 # outputs/saved_models/
