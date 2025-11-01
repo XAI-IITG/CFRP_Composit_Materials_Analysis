@@ -1,3 +1,5 @@
+docs/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -58,4 +60,3 @@ logs/
 # OS-specific
 .DS_Store
 Thumbs.db
-
