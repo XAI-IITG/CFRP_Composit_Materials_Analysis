@@ -1,0 +1,25 @@
+## IMPORTANT NOTES:
+
+1. **DDPG Architecture**: The DDPG actor takes sequence data and averages over time:
+   ```python
+   if len(x.shape) == 3:  # (batch, seq, features)
+       x = x.mean(dim=1)  # Average over sequence
+   ```
+
+2. **Model Type Parameter**: When creating explainers, specify model type:
+   ```python
+   ddpg_explainer = XAIExplainer(ddpg_model, kg, feature_names, model_type='ddpg')
+   ```
+
+3. **Graceful Degradation**: If DDPG model isn't available, notebooks will:
+   - Still work with Transformer and LSTM
+   - Print warning message
+   - Skip DDPG-related visualizations
+
+4. **Feature Names**: All models use the same 6 features:
+   - delta_psd
+   - energy
+   - tof
+   - mean_intensity
+   - crack_density
+   - mean_strain
