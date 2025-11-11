@@ -21,14 +21,43 @@ class CFRPKnowledgeGraph:
         ]
         self.graph.add_nodes_from(phenomena)
         
-        # 2. Add Feature Nodes
+        # 2. Add Feature Nodes (ALL 24 features)
         features = [
-            ('delta_psd', {'type': 'feature', 'sensor': 'pzt', 'unit': 'power'}),
-            ('energy', {'type': 'feature', 'sensor': 'pzt', 'unit': 'joules'}),
-            ('tof', {'type': 'feature', 'sensor': 'pzt', 'unit': 'seconds'}),
+            # PZT sensor features
+            ('avg_delta_psd', {'type': 'feature', 'sensor': 'pzt', 'unit': 'power'}),
+            ('std_delta_psd', {'type': 'feature', 'sensor': 'pzt', 'unit': 'power'}),
+            ('avg_delta_tof', {'type': 'feature', 'sensor': 'pzt', 'unit': 'seconds'}),
+            ('std_delta_tof', {'type': 'feature', 'sensor': 'pzt', 'unit': 'seconds'}),
+            ('avg_scatter_energy', {'type': 'feature', 'sensor': 'pzt', 'unit': 'joules'}),
+            ('std_scatter_energy', {'type': 'feature', 'sensor': 'pzt', 'unit': 'joules'}),
+            ('avg_rms', {'type': 'feature', 'sensor': 'pzt', 'unit': 'amplitude'}),
+            ('avg_peak_frequency', {'type': 'feature', 'sensor': 'pzt', 'unit': 'Hz'}),
+            ('n_pzt_paths', {'type': 'feature', 'sensor': 'pzt', 'unit': 'count'}),
+            
+            # X-ray features
             ('mean_intensity', {'type': 'feature', 'sensor': 'xray', 'unit': 'grayscale'}),
-            ('crack_density', {'type': 'feature', 'sensor': 'xray', 'unit': 'count/mm²'}),
-            ('mean_strain', {'type': 'feature', 'sensor': 'strain', 'unit': 'microstrain'})
+            ('std_intensity', {'type': 'feature', 'sensor': 'xray', 'unit': 'grayscale'}),
+            ('image_entropy', {'type': 'feature', 'sensor': 'xray', 'unit': 'entropy'}),
+            
+            # Strain gauge features
+            ('mean_strain_rms', {'type': 'feature', 'sensor': 'strain', 'unit': 'microstrain'}),
+            ('std_strain_rms', {'type': 'feature', 'sensor': 'strain', 'unit': 'microstrain'}),
+            ('mean_strain_amplitude', {'type': 'feature', 'sensor': 'strain', 'unit': 'microstrain'}),
+            ('n_active_channels', {'type': 'feature', 'sensor': 'strain', 'unit': 'count'}),
+            
+            # Stiffness degradation
+            ('stiffness_degradation', {'type': 'feature', 'sensor': 'mechanical', 'unit': 'percent'}),
+            
+            # Temporal features
+            ('cycles', {'type': 'feature', 'sensor': 'temporal', 'unit': 'cycles'}),
+            ('normalized_cycles', {'type': 'feature', 'sensor': 'temporal', 'unit': 'normalized'}),
+            ('delta_mean_intensity', {'type': 'feature', 'sensor': 'temporal', 'unit': 'change'}),
+            ('delta_stiffness', {'type': 'feature', 'sensor': 'temporal', 'unit': 'change'}),
+            ('delta_avg_delta_psd', {'type': 'feature', 'sensor': 'temporal', 'unit': 'change'}),
+            
+            # Target features
+            ('RUL', {'type': 'feature', 'sensor': 'target', 'unit': 'cycles'}),
+            ('normalized_RUL', {'type': 'feature', 'sensor': 'target', 'unit': 'normalized'})
         ]
         self.graph.add_nodes_from(features)
         
@@ -43,12 +72,34 @@ class CFRPKnowledgeGraph:
         
         # 4. Add Causal Relationships (Feature → Phenomenon)
         feature_to_phenomenon = [
-            ('delta_psd', 'crack_propagation', {'weight': 0.9, 'relation': 'indicates'}),
-            ('energy', 'delamination', {'weight': 0.85, 'relation': 'correlates'}),
-            ('tof', 'crack_propagation', {'weight': 0.7, 'relation': 'measures'}),
+            # PZT features → phenomena
+            ('avg_delta_psd', 'crack_propagation', {'weight': 0.9, 'relation': 'indicates'}),
+            ('std_delta_psd', 'crack_propagation', {'weight': 0.75, 'relation': 'reflects_variability'}),
+            ('avg_delta_tof', 'crack_propagation', {'weight': 0.7, 'relation': 'measures'}),
+            ('std_delta_tof', 'delamination', {'weight': 0.65, 'relation': 'indicates_inconsistency'}),
+            ('avg_scatter_energy', 'delamination', {'weight': 0.85, 'relation': 'correlates'}),
+            ('std_scatter_energy', 'delamination', {'weight': 0.7, 'relation': 'reflects_variability'}),
+            ('avg_rms', 'crack_propagation', {'weight': 0.8, 'relation': 'measures_amplitude'}),
+            ('avg_peak_frequency', 'crack_propagation', {'weight': 0.75, 'relation': 'characterizes'}),
+            
+            # X-ray features → phenomena
             ('mean_intensity', 'matrix_cracking', {'weight': 0.8, 'relation': 'visualizes'}),
-            ('crack_density', 'crack_propagation', {'weight': 0.95, 'relation': 'quantifies'}),
-            ('mean_strain', 'stiffness_loss', {'weight': 0.9, 'relation': 'reflects'})
+            ('std_intensity', 'delamination', {'weight': 0.7, 'relation': 'shows_heterogeneity'}),
+            ('image_entropy', 'crack_propagation', {'weight': 0.85, 'relation': 'quantifies_complexity'}),
+            
+            # Strain features → phenomena
+            ('mean_strain_rms', 'stiffness_loss', {'weight': 0.9, 'relation': 'reflects'}),
+            ('std_strain_rms', 'stiffness_loss', {'weight': 0.75, 'relation': 'shows_variation'}),
+            ('mean_strain_amplitude', 'fiber_breakage', {'weight': 0.85, 'relation': 'indicates_stress'}),
+            
+            # Mechanical features → phenomena
+            ('stiffness_degradation', 'stiffness_loss', {'weight': 0.95, 'relation': 'directly_measures'}),
+            ('stiffness_degradation', 'delamination', {'weight': 0.8, 'relation': 'caused_by'}),
+            
+            # Temporal features → phenomena
+            ('delta_mean_intensity', 'crack_propagation', {'weight': 0.85, 'relation': 'tracks_progression'}),
+            ('delta_stiffness', 'stiffness_loss', {'weight': 0.9, 'relation': 'tracks_degradation'}),
+            ('delta_avg_delta_psd', 'crack_propagation', {'weight': 0.8, 'relation': 'tracks_acceleration'})
         ]
         self.graph.add_edges_from(feature_to_phenomenon)
         
