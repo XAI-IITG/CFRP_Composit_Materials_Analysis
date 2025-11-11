@@ -556,20 +556,34 @@ class RULPredictionEnvironmentDDPG:
         # Calculate error
         error = abs(predicted_rul - actual_rul)
         
-        # Reward function: Same as PPO
-        if error < 0.05:  # Very accurate (within 5% of normalized range)
-            reward = 20.0 - error * 200
-        elif error < 0.1:  # Good accuracy (within 10%)
-            reward = 10.0 - error * 100
-        elif error < 0.2:  # Moderate accuracy (within 20%)
-            reward = 5.0 - error * 25
-        else:  # Poor prediction
-            reward = -error * 20
+        # # Reward function: Same as PPO
+        # if error < 0.05:  # Very accurate (within 5% of normalized range)
+        #     reward = 20.0 - error * 200
+        # elif error < 0.1:  # Good accuracy (within 10%)
+        #     reward = 10.0 - error * 100
+        # elif error < 0.2:  # Moderate accuracy (within 20%)
+        #     reward = 5.0 - error * 25
+        # else:  # Poor prediction
+        #     reward = -error * 20
         
-        # Add bonus for conservative predictions (better to overestimate RUL)
+        # # Add bonus for conservative predictions (better to overestimate RUL)
+        # if predicted_rul > actual_rul:
+        #     reward += 1.0  # Small bonus for conservative predictions
+
+        # NEW (more balanced):
+        if error < 0.05:  # Very accurate
+            reward = 10.0
+        elif error < 0.1:  # Good
+            reward = 5.0 - error * 50
+        elif error < 0.2:  # Acceptable
+            reward = 2.0 - error * 10
+        else:  # Poor
+            reward = -error * 5  # ✅ Less harsh penalty
+
+        # Keep the conservative prediction bonus
         if predicted_rul > actual_rul:
-            reward += 1.0  # Small bonus for conservative predictions
-        
+            reward += 0.5  # ✅ Reduced from 1.0
+                
         # Progress in sequence
         self.current_timestep += 1
         done = self.current_timestep >= self.episode_length
@@ -592,8 +606,10 @@ class RULPredictionEnvironmentDDPG:
 class DDPGAgent:
     """DDPG Agent for RUL Prediction"""
     
-    def __init__(self, input_dim, lr_actor=1e-4, lr_critic=1e-3, 
-                 gamma=0.99, tau=0.001, buffer_size=100000, batch_size=64):
+    # def __init__(self, input_dim, lr_actor=1e-4, lr_critic=1e-3, 
+    #              gamma=0.99, tau=0.001, buffer_size=100000, batch_size=64):
+    def __init__(self, input_dim, lr_actor=3e-5, lr_critic=1e-3, 
+                 gamma=0.99, tau=0.005, buffer_size=100000, batch_size=64):
         
         self.input_dim = input_dim
         self.lr_actor = lr_actor
@@ -616,7 +632,8 @@ class DDPGAgent:
         self.replay_buffer = ReplayBuffer(buffer_size)
         
         # Initialize noise
-        self.noise = OrnsteinUhlenbeckNoise(size=1, mu=0.0, theta=0.15, sigma=0.2)
+        # self.noise = OrnsteinUhlenbeckNoise(size=1, mu=0.0, theta=0.15, sigma=0.2)
+        self.noise = OrnsteinUhlenbeckNoise(size=1, mu=0.5, theta=0.15, sigma=0.3)  # ✅ Center noise at 0.5, increase exploration
         
         # Copy weights to target networks
         self.hard_update(self.actor_target, self.actor)
