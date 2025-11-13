@@ -653,10 +653,11 @@ class DDPGAgent:
         for target_param, param in zip(target.parameters(), source.parameters()):
             target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
     
-    def select_action(self, state, training=True):
+    def select_action(self, state, noise_mu=0.5, noise_sigma=0.3, training=True):
         """Select action with optional noise for exploration"""
         self.actor.eval()
-        
+        self.noise = OrnsteinUhlenbeckNoise(size=1, mu=noise_mu, theta=0.15, sigma=noise_sigma)  # ✅ Center noise at 0.5, increase exploration
+
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(device)
         
         with torch.no_grad():
