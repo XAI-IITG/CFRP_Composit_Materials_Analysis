@@ -7,7 +7,11 @@ from .explainer import XAIExplainer
 from .model_architecture import PositionalEncoding, TransformerRULPredictor, LSTMRULPredictor
 from .drl_models import RULPredictionEnvironment, RULActorCritic, PPORULAgent, OrnsteinUhlenbeckNoise,\
 ReplayBuffer, DDPGActor, DDPGCritic, DDPGAgent, RULPredictionEnvironmentDDPG, RULEnvironment, DRLRULPredictor, DQNAgent
-
+# from .shap_lime_explainer import SHAPLIMEExplainer
+from .rulefit import RuleFit
+from .knowledge_trepan import KnowledgeTrepan
+from .alpa import ALPA
+from .refne import REFNE
 
 __all__ = [
     'CFRPKnowledgeGraph', 
@@ -27,5 +31,10 @@ __all__ = [
     'OrnsteinUhlenbeckNoise',
     'ReplayBuffer',
     'RULEnvironment',
-    'DRLRULPredictor'
+    'DRLRULPredictor',
+    'RuleFit',
+    'KnowledgeTrepan',
+    'ALPA',
+    'REFNE',
+    # 'SHAPLIMEExplainer'
 ]
