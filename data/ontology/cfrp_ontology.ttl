@@ -1,0 +1,123 @@
+@prefix ex: <http://example.org/cfrp/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:ontology a owl:Ontology .
+
+# ============================================================================
+# Classes
+# ============================================================================
+
+ex:Material a owl:Class .
+ex:Feature a owl:Class .
+ex:DamageMode a owl:Class .
+ex:Layup a owl:Class .
+ex:Coupon a owl:Class .
+ex:RULPrediction a owl:Class .
+ex:FatigueTest a owl:Class .
+
+ex:MatrixCrack a owl:Class ;
+    rdfs:subClassOf ex:DamageMode .
+
+ex:Delamination a owl:Class ;
+    rdfs:subClassOf ex:DamageMode .
+
+# ============================================================================
+# Object Properties
+# ============================================================================
+
+ex:correlatesWith a owl:ObjectProperty ;
+    rdfs:domain ex:Feature ;
+    rdfs:range ex:DamageMode .
+
+ex:hasFeature a owl:ObjectProperty ;
+    rdfs:domain ex:Coupon ;
+    rdfs:range ex:Feature .
+
+ex:hasLayup a owl:ObjectProperty ;
+    rdfs:domain ex:Coupon ;
+    rdfs:range ex:Layup .
+
+ex:influencesRUL a owl:ObjectProperty ;
+    rdfs:domain ex:DamageMode ;
+    rdfs:range ex:RULPrediction .
+
+ex:basedOnCoupon a owl:ObjectProperty ;
+    rdfs:domain ex:RULPrediction ;
+    rdfs:range ex:Coupon .
+
+# ============================================================================
+# Datatype Properties
+# ============================================================================
+
+ex:hasValue a owl:DatatypeProperty ;
+    rdfs:domain ex:Feature ;
+    rdfs:range xsd:float .
+
+ex:measuredAtCycle a owl:DatatypeProperty ;
+    rdfs:domain ex:Feature ;
+    rdfs:range xsd:integer .
+
+ex:predictsRUL a owl:DatatypeProperty ;
+    rdfs:domain ex:RULPrediction ;
+    rdfs:range xsd:integer .
+
+# ============================================================================
+# Instances - Materials
+# ============================================================================
+
+ex:CFRP_T700G a ex:Material .
+
+# ============================================================================
+# Instances - Features
+# ============================================================================
+
+ex:DeltaPSD a ex:Feature ;
+    ex:correlatesWith ex:MatrixCrackDensity .
+
+ex:DeltaToF a ex:Feature ;
+    ex:correlatesWith ex:DelaminationArea .
+
+ex:ScatterEnergy a ex:Feature ;
+    ex:correlatesWith ex:DelaminationArea .
+
+# ============================================================================
+# Instances - Damage Modes
+# ============================================================================
+
+ex:MatrixCrackDensity a ex:MatrixCrack ;
+    ex:influencesRUL ex:RULPrediction .
+
+ex:DelaminationArea a ex:Delamination ;
+    ex:influencesRUL ex:RULPrediction .
+
+# ============================================================================
+# Instances - Layups
+# ============================================================================
+
+ex:Layup2 a ex:Layup .
+
+# ============================================================================
+# Instances - Coupons
+# ============================================================================
+
+ex:L2S17 a ex:Coupon ;
+    ex:hasLayup ex:Layup2 ;
+    ex:hasFeature ex:L2S17_DeltaPSD_400k .
+
+# ============================================================================
+# Instances - Feature Measurements
+# ============================================================================
+
+ex:L2S17_DeltaPSD_400k a ex:Feature ;
+    ex:hasValue "0.82"^^xsd:float ;
+    ex:measuredAtCycle 400000 .
+
+# ============================================================================
+# Instances - RUL Predictions
+# ============================================================================
+
+ex:Prediction_001 a ex:RULPrediction ;
+    ex:basedOnCoupon ex:L2S17 ;
+    ex:predictsRUL 20000 .
