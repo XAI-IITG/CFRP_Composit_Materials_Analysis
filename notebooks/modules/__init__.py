@@ -12,6 +12,8 @@ from .rulefit import RuleFit
 from .knowledge_trepan import KnowledgeTrepan
 from .alpa import ALPA
 from .refne import REFNE
+from .query_engine import RuleQueryEngine
+from .shap_explainer import SHAPBenchmarkExplainer
 
 __all__ = [
     'CFRPKnowledgeGraph', 
@@ -37,4 +39,6 @@ __all__ = [
     'ALPA',
     'REFNE',
     # 'SHAPLIMEExplainer'
+    'RuleQueryEngine',
+    'SHAPBenchmarkExplainer'
 ]
