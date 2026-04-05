@@ -53,7 +53,7 @@ credentials.*
 # Logs
 logs/
 *.log
-
+*.md
 # Notebooks
 .ipynb_checkpoints
 

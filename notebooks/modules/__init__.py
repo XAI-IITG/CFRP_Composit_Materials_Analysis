@@ -15,6 +15,7 @@ from .refne import REFNE
 from .query_engine import RuleQueryEngine
 from .shap_explainer import SHAPBenchmarkExplainer
 from .xai_benchmark import XAIBenchmark
+from .temporal_rules import TemporalFeatureExtractor, TemporalRuleFit, TemporalRuleQueryEngine
 
 __all__ = [
     'CFRPKnowledgeGraph', 
@@ -43,4 +44,7 @@ __all__ = [
     'RuleQueryEngine',
     'SHAPBenchmarkExplainer',
     'XAIBenchmark',
+    'TemporalFeatureExtractor',
+    'TemporalRuleFit',
+    'TemporalRuleQueryEngine',
 ]
