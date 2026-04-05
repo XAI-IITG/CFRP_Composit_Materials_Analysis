@@ -14,6 +14,7 @@ from .alpa import ALPA
 from .refne import REFNE
 from .query_engine import RuleQueryEngine
 from .shap_explainer import SHAPBenchmarkExplainer
+from .xai_benchmark import XAIBenchmark
 
 __all__ = [
     'CFRPKnowledgeGraph', 
@@ -40,5 +41,6 @@ __all__ = [
     'REFNE',
     # 'SHAPLIMEExplainer'
     'RuleQueryEngine',
-    'SHAPBenchmarkExplainer'
+    'SHAPBenchmarkExplainer',
+    'XAIBenchmark',
 ]
