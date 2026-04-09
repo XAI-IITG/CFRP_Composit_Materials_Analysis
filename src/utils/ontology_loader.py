@@ -194,6 +194,174 @@ class CFRPOntologyLoader:
         
         return info
     
+    def get_checkpoints(self, coupon_name: str) -> List[Dict]:
+        """
+        Get all fatigue checkpoints for a coupon, ordered by cycle count.
+        
+        Args:
+            coupon_name: Name of the coupon (e.g., 'L1S11')
+        
+        Returns:
+            List of dicts with checkpoint info (uri, cycles, mts_file, date, load)
+        """
+        query = f"""
+        PREFIX ex: <http://example.org/cfrp/>
+        SELECT ?cp ?cycles ?mts ?date ?load
+        WHERE {{
+            ex:{coupon_name} ex:hasCheckpoint ?cp .
+            ?cp ex:atCycleCount ?cycles .
+            OPTIONAL {{ ?cp ex:mtsFileName ?mts }}
+            OPTIONAL {{ ?cp ex:testDate ?date }}
+            OPTIONAL {{ ?cp ex:loadKips ?load }}
+        }}
+        ORDER BY ?cycles
+        """
+        results = self.graph.query(query)
+        checkpoints = []
+        for row in results:
+            checkpoints.append({
+                'uri': str(row.cp).split('/')[-1],
+                'cycles': int(row.cycles),
+                'mts_file': str(row.mts) if row.mts else None,
+                'date': str(row.date) if row.date else None,
+                'load': float(row.load) if row.load else None,
+            })
+        return checkpoints
+    
+    def get_strain_at_cycle(self, coupon_name: str, cycle_count: int) -> List[Dict]:
+        """
+        Get all strain measurements for a coupon at a specific cycle count.
+        
+        Args:
+            coupon_name: Name of the coupon (e.g., 'L1S11')
+            cycle_count: Fatigue cycle count
+        
+        Returns:
+            List of dicts with strain measurement details
+        """
+        query = f"""
+        PREFIX ex: <http://example.org/cfrp/>
+        SELECT ?gauge ?stype ?mean ?std ?max ?min ?rms ?npts ?srcfile
+        WHERE {{
+            ex:{coupon_name} ex:hasCheckpoint ?cp .
+            ?cp ex:atCycleCount {cycle_count} .
+            ?cp ex:hasMeasurement ?m .
+            ?m ex:gaugeID ?gauge .
+            ?m ex:hasStrainType ?stypeUri .
+            ?stypeUri rdfs:label ?stype .
+            OPTIONAL {{ ?m ex:strainMean ?mean }}
+            OPTIONAL {{ ?m ex:strainStd ?std }}
+            OPTIONAL {{ ?m ex:strainMax ?max }}
+            OPTIONAL {{ ?m ex:strainMin ?min }}
+            OPTIONAL {{ ?m ex:strainRMS ?rms }}
+            OPTIONAL {{ ?m ex:numDataPoints ?npts }}
+            OPTIONAL {{ ?m ex:sourceFile ?srcfile }}
+        }}
+        ORDER BY ?stype ?gauge
+        """
+        results = self.graph.query(query)
+        measurements = []
+        for row in results:
+            measurements.append({
+                'gauge': str(row.gauge),
+                'strain_type': str(row.stype),
+                'mean': float(row.mean) if row.mean else None,
+                'std': float(row.std) if row.std else None,
+                'max': float(row.max) if row.max else None,
+                'min': float(row.min) if row.min else None,
+                'rms': float(row.rms) if row.rms else None,
+                'n_points': int(row.npts) if row.npts else None,
+                'source_file': str(row.srcfile) if row.srcfile else None,
+            })
+        return measurements
+    
+    def get_damage_timeline(self, coupon_name: str) -> List[Dict]:
+        """
+        Get damage observations for a coupon ordered by cycle count.
+        
+        Args:
+            coupon_name: Name of the coupon (e.g., 'L1S11')
+        
+        Returns:
+            List of dicts with damage observation details
+        """
+        query = f"""
+        PREFIX ex: <http://example.org/cfrp/>
+        SELECT ?cycles ?text ?cracks ?delam
+        WHERE {{
+            ex:{coupon_name} ex:hasCheckpoint ?cp .
+            ?cp ex:atCycleCount ?cycles .
+            ?cp ex:hasDamageObservation ?obs .
+            ?obs ex:observationText ?text .
+            OPTIONAL {{ ?obs ex:crackCount ?cracks }}
+            OPTIONAL {{ ?obs ex:hasDelamination ?delam }}
+        }}
+        ORDER BY ?cycles
+        """
+        results = self.graph.query(query)
+        timeline = []
+        for row in results:
+            timeline.append({
+                'cycles': int(row.cycles),
+                'observation': str(row.text),
+                'crack_count': int(row.cracks) if row.cracks else None,
+                'has_delamination': str(row.delam).lower() == 'true' if row.delam else False,
+            })
+        return timeline
+    
+    def get_training_dataframe(self):
+        """
+        Export all strain measurements as a flat DataFrame for ML training.
+        
+        Returns:
+            pandas DataFrame with columns: coupon, cycles, strain_type, gauge,
+            mean, std, max, min, rms, range
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("pandas is required. Install with: pip install pandas")
+        
+        query = """
+        PREFIX ex: <http://example.org/cfrp/>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        SELECT ?coupon ?cycles ?stype ?gauge ?mean ?std ?max ?min ?rms ?range ?srcfile
+        WHERE {
+            ?couponUri ex:hasCheckpoint ?cp .
+            ?couponUri ex:couponID ?coupon .
+            ?cp ex:atCycleCount ?cycles .
+            ?cp ex:hasMeasurement ?m .
+            ?m ex:gaugeID ?gauge .
+            ?m ex:hasStrainType ?stypeUri .
+            ?stypeUri rdfs:label ?stype .
+            OPTIONAL { ?m ex:strainMean ?mean }
+            OPTIONAL { ?m ex:strainStd ?std }
+            OPTIONAL { ?m ex:strainMax ?max }
+            OPTIONAL { ?m ex:strainMin ?min }
+            OPTIONAL { ?m ex:strainRMS ?rms }
+            OPTIONAL { ?m ex:strainRange ?range }
+            OPTIONAL { ?m ex:sourceFile ?srcfile }
+        }
+        ORDER BY ?coupon ?cycles ?stype ?gauge
+        """
+        results = self.graph.query(query)
+        rows = []
+        for row in results:
+            rows.append({
+                'coupon': str(row.coupon),
+                'cycles': int(row.cycles),
+                'strain_type': str(row.stype),
+                'gauge': str(row.gauge),
+                'mean': float(row.mean) if row.mean else None,
+                'std': float(row.std) if row.std else None,
+                'max': float(row.max) if row.max else None,
+                'min': float(row.min) if row.min else None,
+                'rms': float(row.rms) if row.rms else None,
+                'range': float(row.range) if row.range else None,
+                'source_file': str(row.srcfile) if row.srcfile else None,
+            })
+        return pd.DataFrame(rows)
+    
     def query_sparql(self, query: str) -> List:
         """
         Execute a SPARQL query on the ontology.

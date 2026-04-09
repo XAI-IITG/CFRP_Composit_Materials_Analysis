@@ -1,7 +1,7 @@
-@prefix ex: <http://example.org/cfrp/> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ex:   <http://example.org/cfrp/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
 ex:ontology a owl:Ontology .
 
@@ -9,115 +9,317 @@ ex:ontology a owl:Ontology .
 # Classes
 # ============================================================================
 
-ex:Material a owl:Class .
-ex:Feature a owl:Class .
-ex:DamageMode a owl:Class .
-ex:Layup a owl:Class .
-ex:Coupon a owl:Class .
-ex:RULPrediction a owl:Class .
-ex:FatigueTest a owl:Class .
+ex:Material          a owl:Class .
+ex:Feature           a owl:Class .
+ex:DamageMode        a owl:Class .
+ex:Layup             a owl:Class .
+ex:Coupon            a owl:Class .
+ex:RULPrediction     a owl:Class .
+ex:FatigueTest       a owl:Class .
+ex:BoundaryCondition a owl:Class .
+ex:LambWaveMode      a owl:Class .
 
-ex:MatrixCrack a owl:Class ;
-    rdfs:subClassOf ex:DamageMode .
-
-ex:Delamination a owl:Class ;
-    rdfs:subClassOf ex:DamageMode .
+ex:MatrixCrack  a owl:Class ; rdfs:subClassOf ex:DamageMode .
+ex:Delamination a owl:Class ; rdfs:subClassOf ex:DamageMode .
+ex:Fracture     a owl:Class ; rdfs:subClassOf ex:DamageMode .
 
 # ============================================================================
 # Object Properties
 # ============================================================================
 
-ex:correlatesWith a owl:ObjectProperty ;
-    rdfs:domain ex:Feature ;
-    rdfs:range ex:DamageMode .
-
-ex:hasFeature a owl:ObjectProperty ;
-    rdfs:domain ex:Coupon ;
-    rdfs:range ex:Feature .
-
-ex:hasLayup a owl:ObjectProperty ;
-    rdfs:domain ex:Coupon ;
-    rdfs:range ex:Layup .
-
-ex:influencesRUL a owl:ObjectProperty ;
-    rdfs:domain ex:DamageMode ;
-    rdfs:range ex:RULPrediction .
-
-ex:basedOnCoupon a owl:ObjectProperty ;
-    rdfs:domain ex:RULPrediction ;
-    rdfs:range ex:Coupon .
+ex:correlatesWith   a owl:ObjectProperty ; rdfs:domain ex:Feature      ; rdfs:range ex:DamageMode .
+ex:hasFeature       a owl:ObjectProperty ; rdfs:domain ex:Coupon       ; rdfs:range ex:Feature .
+ex:hasLayup         a owl:ObjectProperty ; rdfs:domain ex:Coupon       ; rdfs:range ex:Layup .
+ex:hasMaterial      a owl:ObjectProperty ; rdfs:domain ex:Coupon       ; rdfs:range ex:Material .
+ex:influencesRUL    a owl:ObjectProperty ; rdfs:domain ex:DamageMode   ; rdfs:range ex:RULPrediction .
+ex:basedOnCoupon    a owl:ObjectProperty ; rdfs:domain ex:RULPrediction ; rdfs:range ex:Coupon .
+ex:precedes         a owl:ObjectProperty ; rdfs:domain ex:DamageMode   ; rdfs:range ex:DamageMode .
+ex:causesProgression a owl:ObjectProperty ; rdfs:domain ex:DamageMode  ; rdfs:range ex:DamageMode .
+ex:extractedFrom    a owl:ObjectProperty ; rdfs:domain ex:Feature      ; rdfs:range ex:LambWaveMode .
+ex:derivedFrom      a owl:ObjectProperty ; rdfs:domain ex:Feature      ; rdfs:range ex:Feature .
+ex:susceptibleTo    a owl:ObjectProperty ; rdfs:domain ex:Layup        ; rdfs:range ex:DamageMode .
+ex:hasBoundaryCondition a owl:ObjectProperty ; rdfs:domain ex:Coupon   ; rdfs:range ex:BoundaryCondition .
 
 # ============================================================================
 # Datatype Properties
 # ============================================================================
 
-ex:hasValue a owl:DatatypeProperty ;
-    rdfs:domain ex:Feature ;
-    rdfs:range xsd:float .
-
-ex:measuredAtCycle a owl:DatatypeProperty ;
-    rdfs:domain ex:Feature ;
-    rdfs:range xsd:integer .
-
-ex:predictsRUL a owl:DatatypeProperty ;
-    rdfs:domain ex:RULPrediction ;
-    rdfs:range xsd:integer .
+ex:hasValue         a owl:DatatypeProperty ; rdfs:domain ex:Feature       ; rdfs:range xsd:float .
+ex:measuredAtCycle  a owl:DatatypeProperty ; rdfs:domain ex:Feature       ; rdfs:range xsd:integer .
+ex:predictsRUL      a owl:DatatypeProperty ; rdfs:domain ex:RULPrediction ; rdfs:range xsd:integer .
+ex:monotonicTrend   a owl:DatatypeProperty ; rdfs:domain ex:Feature       ; rdfs:range xsd:string .
+ex:outerPlyAngle    a owl:DatatypeProperty ; rdfs:domain ex:Layup         ; rdfs:range xsd:integer .
+ex:stackingSequence a owl:DatatypeProperty ; rdfs:domain ex:Layup         ; rdfs:range xsd:string .
+ex:couponID         a owl:DatatypeProperty ; rdfs:domain ex:Coupon        ; rdfs:range xsd:string .
 
 # ============================================================================
-# Instances - Materials
+# Material
 # ============================================================================
 
-ex:CFRP_T700G a ex:Material .
+ex:CFRP_T700G a ex:Material ;
+    rdfs:label "Torayca T700G Unidirectional Carbon Prepreg" .
 
 # ============================================================================
-# Instances - Features
+# Lamb Wave Modes
 # ============================================================================
 
-ex:DeltaPSD a ex:Feature ;
-    ex:correlatesWith ex:MatrixCrackDensity .
+ex:S0Mode a ex:LambWaveMode ;
+    rdfs:label "S0 Fundamental Symmetric Mode" ;
+    rdfs:comment "Only mode used for CI extraction; A0 excluded due to edge reflections." .
 
-ex:DeltaToF a ex:Feature ;
-    ex:correlatesWith ex:DelaminationArea .
-
-ex:ScatterEnergy a ex:Feature ;
-    ex:correlatesWith ex:DelaminationArea .
+ex:A0Mode a ex:LambWaveMode ;
+    rdfs:label "A0 Fundamental Anti-Symmetric Mode" ;
+    rdfs:comment "Not used for CI analysis in small coupons." .
 
 # ============================================================================
-# Instances - Damage Modes
+# Boundary Conditions
+# ============================================================================
+
+ex:BC_Baseline    a ex:BoundaryCondition ; rdfs:label "Baseline: undamaged, zero load" .
+ex:BC_Loaded      a ex:BoundaryCondition ; rdfs:label "Type 1: loaded with mean fatigue load" .
+ex:BC_Clamped     a ex:BoundaryCondition ; rdfs:label "Type 2: clamped, zero load" .
+ex:BC_TractionFree a ex:BoundaryCondition ; rdfs:label "Type 3: removed, zero load" .
+
+# ============================================================================
+# NEW: Experimental Data Classes
+# ============================================================================
+
+ex:FatigueCheckpoint  a owl:Class ;
+    rdfs:label "Fatigue Checkpoint" ;
+    rdfs:comment "An inspection point during fatigue testing at a specific cycle count." .
+
+ex:StrainMeasurement  a owl:Class ;
+    rdfs:label "Strain Measurement" ;
+    rdfs:comment "A strain gauge measurement set (4 gauges) at a checkpoint with a specific decomposition type." .
+
+ex:DamageObservation  a owl:Class ;
+    rdfs:label "Damage Observation" ;
+    rdfs:comment "Researcher-annotated damage observation from visual inspection or X-ray." .
+
+ex:StaticTest         a owl:Class ;
+    rdfs:label "Static Test" ;
+    rdfs:comment "A quasi-static loading test (non-fatigue)." .
+
+ex:StrainType         a owl:Class ;
+    rdfs:label "Strain Decomposition Type" ;
+    rdfs:comment "The decomposition component: Axial, Membrane, or Shear." .
+
+# Strain Type Instances
+ex:Axial     a ex:StrainType ; rdfs:label "Axial (A)" ;
+    rdfs:comment "Strain along the primary loading direction." .
+ex:Membrane  a ex:StrainType ; rdfs:label "Membrane (M)" ;
+    rdfs:comment "In-plane mid-surface extensional strain." .
+ex:Shear     a ex:StrainType ; rdfs:label "Shear/Surface (S)" ;
+    rdfs:comment "Out-of-plane bending or shear strain component." .
+
+# ============================================================================
+# NEW: Object Properties for Experimental Data
+# ============================================================================
+
+ex:hasCheckpoint       a owl:ObjectProperty ;
+    rdfs:domain ex:Coupon ; rdfs:range ex:FatigueCheckpoint ;
+    rdfs:label "has checkpoint" .
+
+ex:hasMeasurement      a owl:ObjectProperty ;
+    rdfs:domain ex:FatigueCheckpoint ; rdfs:range ex:StrainMeasurement ;
+    rdfs:label "has measurement" .
+
+ex:hasDamageObservation a owl:ObjectProperty ;
+    rdfs:domain ex:FatigueCheckpoint ; rdfs:range ex:DamageObservation ;
+    rdfs:label "has damage observation" .
+
+ex:measuredUnder       a owl:ObjectProperty ;
+    rdfs:domain ex:StrainMeasurement ; rdfs:range ex:BoundaryCondition ;
+    rdfs:label "measured under boundary condition" .
+
+ex:hasStrainType       a owl:ObjectProperty ;
+    rdfs:domain ex:StrainMeasurement ; rdfs:range ex:StrainType ;
+    rdfs:label "has strain decomposition type" .
+
+# ============================================================================
+# NEW: Datatype Properties for Experimental Data
+# ============================================================================
+
+ex:atCycleCount     a owl:DatatypeProperty ; rdfs:domain ex:FatigueCheckpoint ; rdfs:range xsd:integer ;
+    rdfs:label "fatigue cycle count at this checkpoint" .
+ex:testDate         a owl:DatatypeProperty ; rdfs:domain ex:FatigueCheckpoint ; rdfs:range xsd:string ;
+    rdfs:label "date of test" .
+ex:loadKips         a owl:DatatypeProperty ; rdfs:domain ex:FatigueCheckpoint ; rdfs:range xsd:float ;
+    rdfs:label "applied load in kips" .
+
+ex:strainMean       a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:float .
+ex:strainStd        a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:float .
+ex:strainMax        a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:float .
+ex:strainMin        a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:float .
+ex:strainRMS        a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:float .
+ex:strainRange      a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:float .
+ex:gaugeID          a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:string ;
+    rdfs:label "strain gauge identifier (strain1-4)" .
+ex:sourceFile       a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:string ;
+    rdfs:label "source .mat filename" .
+ex:numDataPoints    a owl:DatatypeProperty ; rdfs:domain ex:StrainMeasurement ; rdfs:range xsd:integer ;
+    rdfs:label "number of time-sampled data points" .
+ex:mtsFileName      a owl:DatatypeProperty ; rdfs:domain ex:FatigueCheckpoint ; rdfs:range xsd:string ;
+    rdfs:label "MTS file name identifier from logbook" .
+
+ex:observationText  a owl:DatatypeProperty ; rdfs:domain ex:DamageObservation ; rdfs:range xsd:string .
+ex:crackCount       a owl:DatatypeProperty ; rdfs:domain ex:DamageObservation ; rdfs:range xsd:integer .
+ex:hasDelamination  a owl:DatatypeProperty ; rdfs:domain ex:DamageObservation ; rdfs:range xsd:boolean .
+
+# ============================================================================
+# Damage Modes — with causal chain
 # ============================================================================
 
 ex:MatrixCrackDensity a ex:MatrixCrack ;
-    ex:influencesRUL ex:RULPrediction .
+    rdfs:label "Matrix Crack Density" ;
+    rdfs:comment "Measured in cracks per inch from X-ray images." ;
+    ex:precedes          ex:DelaminationArea ;
+    ex:causesProgression ex:DelaminationArea .
 
 ex:DelaminationArea a ex:Delamination ;
-    ex:influencesRUL ex:RULPrediction .
+    rdfs:label "Delamination Area (mm2)" ;
+    rdfs:comment "Total projected delamination area measured from X-ray images." ;
+    ex:precedes          ex:FatigueFracture ;
+    ex:causesProgression ex:FatigueFracture .
+
+ex:FatigueFracture a ex:Fracture ;
+    rdfs:label "Fatigue Fracture" ;
+    rdfs:comment "Ultimate failure mode after progressive damage." .
 
 # ============================================================================
-# Instances - Layups
+# Features (Condition Indicators) — with physics links
 # ============================================================================
 
-ex:Layup2 a ex:Layup .
+ex:DeltaPSD a ex:Feature ;
+    rdfs:label "Delta PSD: Change in Power Spectral Density" ;
+    ex:correlatesWith ex:MatrixCrackDensity ;
+    ex:extractedFrom  ex:S0Mode ;
+    ex:monotonicTrend "decreasing" .
+
+ex:DeltaToF a ex:Feature ;
+    rdfs:label "Delta ToF: Change in Time of Flight" ;
+    ex:correlatesWith ex:DelaminationArea ;
+    ex:extractedFrom  ex:S0Mode ;
+    ex:monotonicTrend "increasing" .
+
+ex:ScatterEnergy a ex:Feature ;
+    rdfs:label "Normalized Scatter Energy" ;
+    ex:correlatesWith ex:DelaminationArea ;
+    ex:extractedFrom  ex:S0Mode ;
+    ex:monotonicTrend "increasing" .
+
+ex:CompositeFeature a ex:Feature ;
+    rdfs:label "Composite Delamination Feature: ScatterEnergy x DeltaToF" ;
+    ex:correlatesWith ex:DelaminationArea ;
+    ex:derivedFrom    ex:ScatterEnergy ;
+    ex:derivedFrom    ex:DeltaToF ;
+    ex:extractedFrom  ex:S0Mode ;
+    ex:monotonicTrend "increasing" .
 
 # ============================================================================
-# Instances - Coupons
+# Layups — with physics characteristics
 # ============================================================================
 
-ex:L2S17 a ex:Coupon ;
-    ex:hasLayup ex:Layup2 ;
-    ex:hasFeature ex:L2S17_DeltaPSD_400k .
+ex:Layup1 a ex:Layup ;
+    rdfs:label "Layup 1: [02/904]" ;
+    ex:stackingSequence "[02/904]" ;
+    ex:outerPlyAngle    0 ;
+    ex:susceptibleTo    ex:MatrixCrackDensity ;
+    ex:susceptibleTo    ex:DelaminationArea .
+
+ex:Layup2 a ex:Layup ;
+    rdfs:label "Layup 2: [0/902/45/-45/90]" ;
+    ex:stackingSequence "[0/902/45/-45/90]" ;
+    ex:outerPlyAngle    0 ;
+    ex:susceptibleTo    ex:MatrixCrackDensity ;
+    ex:susceptibleTo    ex:DelaminationArea .
+
+ex:Layup3 a ex:Layup ;
+    rdfs:label "Layup 3: [902/45/-45]2" ;
+    ex:stackingSequence "[902/45/-45]2" ;
+    ex:outerPlyAngle    90 ;
+    ex:susceptibleTo    ex:MatrixCrackDensity ;
+    ex:susceptibleTo    ex:DelaminationArea .
 
 # ============================================================================
-# Instances - Feature Measurements
+# Coupons — all 12
+# ============================================================================
+
+ex:L1S11 a ex:Coupon ; ex:couponID "L1S11" ; ex:hasLayup ex:Layup1 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L1S12 a ex:Coupon ; ex:couponID "L1S12" ; ex:hasLayup ex:Layup1 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L1S17 a ex:Coupon ; ex:couponID "L1S17" ; ex:hasLayup ex:Layup1 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L1S18 a ex:Coupon ; ex:couponID "L1S18" ; ex:hasLayup ex:Layup1 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L1S19 a ex:Coupon ; ex:couponID "L1S19" ; ex:hasLayup ex:Layup1 ; ex:hasMaterial ex:CFRP_T700G .
+
+ex:L2S11 a ex:Coupon ; ex:couponID "L2S11" ; ex:hasLayup ex:Layup2 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L2S12 a ex:Coupon ; ex:couponID "L2S12" ; ex:hasLayup ex:Layup2 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L2S17 a ex:Coupon ; ex:couponID "L2S17" ; ex:hasLayup ex:Layup2 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L2S18 a ex:Coupon ; ex:couponID "L2S18" ; ex:hasLayup ex:Layup2 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L2S20 a ex:Coupon ; ex:couponID "L2S20" ; ex:hasLayup ex:Layup2 ; ex:hasMaterial ex:CFRP_T700G .
+
+ex:L3S17 a ex:Coupon ; ex:couponID "L3S17" ; ex:hasLayup ex:Layup3 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L3S18 a ex:Coupon ; ex:couponID "L3S18" ; ex:hasLayup ex:Layup3 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L3S19 a ex:Coupon ; ex:couponID "L3S19" ; ex:hasLayup ex:Layup3 ; ex:hasMaterial ex:CFRP_T700G .
+ex:L3S20 a ex:Coupon ; ex:couponID "L3S20" ; ex:hasLayup ex:Layup3 ; ex:hasMaterial ex:CFRP_T700G .
+
+# Link each coupon to the feature types it uses
+ex:L2S17 ex:hasFeature ex:DeltaPSD ;
+         ex:hasFeature ex:DeltaToF ;
+         ex:hasFeature ex:ScatterEnergy ;
+         ex:hasFeature ex:CompositeFeature ;
+         ex:hasBoundaryCondition ex:BC_Loaded .
+
+# (repeat hasFeature for all coupons — shown here for L2S17 as example)
+ex:L3S18 ex:hasFeature ex:DeltaPSD ;
+         ex:hasFeature ex:DeltaToF ;
+         ex:hasFeature ex:ScatterEnergy ;
+         ex:hasFeature ex:CompositeFeature .
+
+ex:L3S20 ex:hasFeature ex:DeltaPSD ;
+         ex:hasFeature ex:DeltaToF ;
+         ex:hasFeature ex:ScatterEnergy ;
+         ex:hasFeature ex:CompositeFeature .
+
+ex:L2S20 ex:hasFeature ex:DeltaPSD ;
+         ex:hasFeature ex:DeltaToF ;
+         ex:hasFeature ex:ScatterEnergy ;
+         ex:hasFeature ex:CompositeFeature .
+
+# ============================================================================
+# Feature Measurements (timestamped observations — keep these separate)
 # ============================================================================
 
 ex:L2S17_DeltaPSD_400k a ex:Feature ;
-    ex:hasValue "0.82"^^xsd:float ;
-    ex:measuredAtCycle 400000 .
+    ex:hasValue        "0.82"^^xsd:float ;
+    ex:measuredAtCycle 400000 ;
+    ex:correlatesWith  ex:MatrixCrackDensity ;
+    ex:extractedFrom   ex:S0Mode .
+
+ex:L2S17_ScatterEnergy_400k a ex:Feature ;
+    ex:hasValue        "0.74"^^xsd:float ;
+    ex:measuredAtCycle 400000 ;
+    ex:correlatesWith  ex:DelaminationArea ;
+    ex:extractedFrom   ex:S0Mode .
+
+ex:L2S17_DeltaToF_400k a ex:Feature ;
+    ex:hasValue        "2.1"^^xsd:float ;
+    ex:measuredAtCycle 400000 ;
+    ex:correlatesWith  ex:DelaminationArea ;
+    ex:extractedFrom   ex:S0Mode .
+
+# Link coupon to its timestamped measurements
+ex:L2S17 ex:hasFeature ex:L2S17_DeltaPSD_400k ;
+         ex:hasFeature ex:L2S17_ScatterEnergy_400k ;
+         ex:hasFeature ex:L2S17_DeltaToF_400k .
 
 # ============================================================================
-# Instances - RUL Predictions
+# RUL Predictions — FIX: link to instances, not classes
 # ============================================================================
 
-ex:Prediction_001 a ex:RULPrediction ;
+ex:Prediction_L2S17_001 a ex:RULPrediction ;
     ex:basedOnCoupon ex:L2S17 ;
-    ex:predictsRUL 20000 .
+    ex:predictsRUL   20000 .
+
+# FIX: influencesRUL points to a specific prediction instance
+ex:MatrixCrackDensity ex:influencesRUL ex:Prediction_L2S17_001 .
+ex:DelaminationArea   ex:influencesRUL ex:Prediction_L2S17_001 .
