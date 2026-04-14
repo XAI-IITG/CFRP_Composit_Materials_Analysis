@@ -16,6 +16,7 @@ from .query_engine import RuleQueryEngine
 from .shap_explainer import SHAPBenchmarkExplainer
 from .xai_benchmark import XAIBenchmark
 from .temporal_rules import TemporalFeatureExtractor, TemporalRuleFit, TemporalRuleQueryEngine
+from .stl_rules import STLFeatureExtractor, STLRuleFit, STLRuleQueryEngine, STLRuleTranslator
 
 __all__ = [
     'CFRPKnowledgeGraph', 
@@ -47,4 +48,8 @@ __all__ = [
     'TemporalFeatureExtractor',
     'TemporalRuleFit',
     'TemporalRuleQueryEngine',
+    'STLFeatureExtractor',
+    'STLRuleFit',
+    'STLRuleQueryEngine',
+    'STLRuleTranslator',
 ]
