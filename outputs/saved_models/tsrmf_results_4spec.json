@@ -1,0 +1,112 @@
+{
+  "plain_transformer": {
+    "model_name": "plain_transformer",
+    "n_splits": 4,
+    "units": "normalized",
+    "mean_test_mae": 0.08496155962347984,
+    "std_test_mae": 0.02224921895251477,
+    "mean_test_rmse": 0.10717264004051685,
+    "std_test_rmse": 0.02625578750848029,
+    "folds": [
+      {
+        "fold": 1,
+        "test_mae": 0.11926848441362381,
+        "test_rmse": 0.14219658076763153,
+        "per_specimen_mae": {
+          "S18": 0.11926848441362381
+        },
+        "test_specimens": [
+          "S18"
+        ]
+      },
+      {
+        "fold": 2,
+        "test_mae": 0.08380819112062454,
+        "test_rmse": 0.11095283180475235,
+        "per_specimen_mae": {
+          "S11": 0.08380819112062454
+        },
+        "test_specimens": [
+          "S11"
+        ]
+      },
+      {
+        "fold": 3,
+        "test_mae": 0.079615019261837,
+        "test_rmse": 0.10731051862239838,
+        "per_specimen_mae": {
+          "S12": 0.079615019261837
+        },
+        "test_specimens": [
+          "S12"
+        ]
+      },
+      {
+        "fold": 4,
+        "test_mae": 0.057154543697834015,
+        "test_rmse": 0.06823062896728516,
+        "per_specimen_mae": {
+          "S19": 0.057154543697834015
+        },
+        "test_specimens": [
+          "S19"
+        ]
+      }
+    ]
+  },
+  "ts_rmf": {
+    "model_name": "ts_rmf",
+    "n_splits": 4,
+    "units": "normalized",
+    "mean_test_mae": 0.11451503448188305,
+    "std_test_mae": 0.043550429813791015,
+    "mean_test_rmse": 0.15196005068719387,
+    "std_test_rmse": 0.040604130993917395,
+    "folds": [
+      {
+        "fold": 1,
+        "test_mae": 0.186730295419693,
+        "test_rmse": 0.219645157456398,
+        "per_specimen_mae": {
+          "S18": 0.186730295419693
+        },
+        "test_specimens": [
+          "S18"
+        ]
+      },
+      {
+        "fold": 2,
+        "test_mae": 0.0701678991317749,
+        "test_rmse": 0.11148657649755478,
+        "per_specimen_mae": {
+          "S11": 0.0701678991317749
+        },
+        "test_specimens": [
+          "S11"
+        ]
+      },
+      {
+        "fold": 3,
+        "test_mae": 0.10345596820116043,
+        "test_rmse": 0.13674651086330414,
+        "per_specimen_mae": {
+          "S12": 0.10345596820116043
+        },
+        "test_specimens": [
+          "S12"
+        ]
+      },
+      {
+        "fold": 4,
+        "test_mae": 0.09770597517490387,
+        "test_rmse": 0.13996195793151855,
+        "per_specimen_mae": {
+          "S19": 0.09770597517490387
+        },
+        "test_specimens": [
+          "S19"
+        ]
+      }
+    ]
+  }
+}
