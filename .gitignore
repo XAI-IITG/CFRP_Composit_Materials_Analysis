@@ -1,5 +1,7 @@
 docs/
 BTP_Report/
+BTP report 8th sem/
+*.tex
 # Python
 __pycache__/
 *.py[cod]

@@ -463,6 +463,10 @@ class XAIBenchmark:
             for feat, _, _ in rule["conditions"]:
                 feats_in_rules.add(feat)
 
+        # Use the engine's feature count for denominator if available
+        # (Handles augmented Temporal/STL features correctly)
+        engine_n_features = len(query_engine.feature_names) if hasattr(query_engine, "feature_names") else self.n_features
+
         return {
             "avg_matched_rules_per_sample": float(np.mean(n_matched)),
             "median_matched_rules_per_sample": float(np.median(n_matched)),
@@ -471,7 +475,7 @@ class XAIBenchmark:
             ),
             "total_rules": total_rules,
             "unique_features_in_rules": len(feats_in_rules),
-            "feature_coverage": len(feats_in_rules) / max(self.n_features, 1),
+            "feature_coverage": len(feats_in_rules) / max(engine_n_features, 1),
         }
 
     # ================================================================== #
