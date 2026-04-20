@@ -56,6 +56,9 @@ credentials.*
 logs/
 *.log
 *.md
+!README.md
+!domain_validation.md
+!mathematical_formalization.md
 # Notebooks
 .ipynb_checkpoints
 
