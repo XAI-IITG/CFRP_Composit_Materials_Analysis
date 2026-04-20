@@ -1,5 +1,7 @@
 docs/
 BTP_Report/
+BTP report 8th sem/
+*.tex
 # Python
 __pycache__/
 *.py[cod]
@@ -53,7 +55,7 @@ credentials.*
 # Logs
 logs/
 *.log
-
+*.md
 # Notebooks
 .ipynb_checkpoints
 

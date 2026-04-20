@@ -12,6 +12,11 @@ from .rulefit import RuleFit
 from .knowledge_trepan import KnowledgeTrepan
 from .alpa import ALPA
 from .refne import REFNE
+from .query_engine import RuleQueryEngine
+from .shap_explainer import SHAPBenchmarkExplainer
+from .xai_benchmark import XAIBenchmark
+from .temporal_rules import TemporalFeatureExtractor, TemporalRuleFit, TemporalRuleQueryEngine
+from .stl_rules import STLFeatureExtractor, STLRuleFit, STLRuleQueryEngine, STLRuleTranslator
 
 __all__ = [
     'CFRPKnowledgeGraph', 
@@ -37,4 +42,14 @@ __all__ = [
     'ALPA',
     'REFNE',
     # 'SHAPLIMEExplainer'
+    'RuleQueryEngine',
+    'SHAPBenchmarkExplainer',
+    'XAIBenchmark',
+    'TemporalFeatureExtractor',
+    'TemporalRuleFit',
+    'TemporalRuleQueryEngine',
+    'STLFeatureExtractor',
+    'STLRuleFit',
+    'STLRuleQueryEngine',
+    'STLRuleTranslator',
 ]

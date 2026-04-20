@@ -19,11 +19,21 @@ class RuleFit:
     4. Return ranked interpretable rules
     """
     
-    def __init__(self, model, feature_names, n_estimators=100, max_depth=3, 
-                 tree_size=4, memory_par=0.01, random_state=42):
+    def __init__(
+        self,
+        model,
+        feature_names,
+        n_estimators=100,
+        max_depth=3,
+        tree_size=4,
+        memory_par=0.01,
+        random_state=42,
+        target_scaler=None,
+        stage_boundaries=None,
+    ):
         """
         Initialize RuleFit
-        
+
         Args:
             model: Trained PyTorch model to extract rules from
             feature_names: List of feature names
@@ -32,6 +42,8 @@ class RuleFit:
             tree_size: Average number of terminal nodes in trees
             memory_par: Lasso regularization parameter (higher = fewer rules)
             random_state: Random seed
+            target_scaler: Optional scaler used to inverse-transform model outputs
+            stage_boundaries: Dict like {"Early": 130000, "Mid": 80000}
         """
         self.model = model
         self.feature_names = feature_names
@@ -40,85 +52,102 @@ class RuleFit:
         self.tree_size = tree_size
         self.memory_par = memory_par
         self.random_state = random_state
+        self.target_scaler = target_scaler
+        self.stage_boundaries = stage_boundaries or {
+            "Early": 130000,
+            "Mid": 80000,
+        }
+
         self.device = next(model.parameters()).device
-        
-        # Will be populated during fit
+
         self.rules = []
+        self.all_rules = []
         self.rule_ensemble = None
         self.lasso_model = None
         self.linear_coefs = None
+        self.selected_rule_indices = []
+        self.selected_rule_importances = []
         
     def fit(self, X, y_true, stage_labels):
         """
         Fit RuleFit: extract rules and select important ones
-        
+
         Args:
             X: Input features (n_samples, seq_length, n_features) - NumPy array
             y_true: True target values (actual RUL cycles)
             stage_labels: Degradation stage for each sample
-            
+
         Returns:
             self
         """
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("RULEFIT RULE EXTRACTION")
-        print("="*80)
-        
-        # Step 1: Get model predictions
+        print("=" * 80)
+
         print("\n1️⃣ Getting model predictions...")
         y_pred = self._get_predictions(X)
-        
-        # Use last timestep features for rule extraction
-        X_2d = X[:, -1, :]  # (n_samples, n_features)
-        
+
+        X_2d = X[:, -1, :]
+
         print(f"   ✓ Got {len(y_pred)} predictions")
         print(f"   Prediction range: [{y_pred.min():.0f}, {y_pred.max():.0f}] cycles")
-        
-        # Step 2: Train tree ensemble on predictions
+
         print("\n2️⃣ Training tree ensemble...")
         self.rule_ensemble = self._train_tree_ensemble(X_2d, y_pred)
         print(f"   ✓ Trained {self.n_estimators} trees")
-        
-        # Step 3: Extract all rules from trees
+
         print("\n3️⃣ Extracting rules from trees...")
-        all_rules = self._extract_rules_from_ensemble(X_2d)
-        print(f"   ✓ Extracted {len(all_rules)} candidate rules")
-        
-        # Step 4: Create rule feature matrix
+        self.all_rules = self._extract_rules_from_ensemble(X_2d)
+        print(f"   ✓ Extracted {len(self.all_rules)} candidate rules")
+
         print("\n4️⃣ Creating rule feature matrix...")
-        rule_features = self._create_rule_features(X_2d, all_rules)
+        rule_features = self._create_rule_features(X_2d, self.all_rules)
         print(f"   ✓ Created feature matrix: {rule_features.shape}")
-        
-        # Step 5: Select important rules using Lasso
+
         print("\n5️⃣ Selecting important rules with Lasso...")
-        selected_rules, rule_importances = self._select_rules_lasso(
+        self.selected_rule_indices, self.selected_rule_importances = self._select_rules_lasso(
             rule_features, y_pred
         )
-        print(f"   ✓ Selected {len(selected_rules)} important rules")
-        
-        # Step 6: Categorize rules by stage and prediction
+        print(f"   ✓ Selected {len(self.selected_rule_indices)} important rules")
+
         print("\n6️⃣ Categorizing rules by stage...")
         self.rules = self._categorize_rules(
-            selected_rules, rule_importances, X_2d, y_pred, stage_labels
+            self.selected_rule_indices,
+            self.selected_rule_importances,
+            X_2d,
+            y_pred,
+            stage_labels,
         )
         print(f"   ✓ Categorized {len(self.rules)} final rules")
-        
-        print("\n" + "="*80)
+
+        print("\n" + "=" * 80)
         print(f"✅ RULEFIT COMPLETE: {len(self.rules)} rules extracted")
-        print("="*80)
-        
+        print("=" * 80)
+
         return self
     
     def _get_predictions(self, X):
-        """Get model predictions using PyTorch"""
+        """Get model predictions and convert them to actual RUL cycles when needed."""
         self.model.eval()
         with torch.no_grad():
             X_tensor = torch.FloatTensor(X).to(self.device)
-            y_pred_normalized = self.model(X_tensor).cpu().numpy().flatten()
-        
-        # Note: If predictions are normalized, you need to inverse transform
-        # For now, assuming they're in actual RUL cycles
-        return y_pred_normalized
+            y_pred = self.model(X_tensor).detach().cpu().numpy().reshape(-1, 1)
+
+        if self.target_scaler is not None:
+            y_pred = self.target_scaler.inverse_transform(y_pred)
+
+        return y_pred.flatten()
+    
+    def _prediction_from_rul(self, avg_rul):
+        if avg_rul < self.stage_boundaries["Mid"]:
+            return "Critical"
+        if avg_rul < self.stage_boundaries["Early"]:
+            return "Warning"
+        return "Normal"
+
+
+    def _rule_specificity(self, conditions):
+        return len(conditions)
     
     def _train_tree_ensemble(self, X, y):
         """Train gradient boosting ensemble"""
@@ -257,73 +286,53 @@ class RuleFit:
     
     def _categorize_rules(self, selected_indices, importances, X, y_pred, stage_labels):
         """
-        Categorize selected rules by stage and prediction type
-        
-        Args:
-            selected_indices: Indices of selected rules
-            importances: Importance scores
-            X: Feature matrix
-            y_pred: Model predictions
-            stage_labels: Stage labels
-            
-        Returns:
-            List of categorized rule dictionaries
+        Categorize selected rules by stage and prediction type.
         """
-        # Get all rules that were extracted
-        all_rules = []
-        for tree in self.rule_ensemble.estimators_:
-            tree_rules = self._extract_rules_from_tree(tree[0].tree_, 0)
-            all_rules.extend(tree_rules)
-        
         categorized = []
-        
+
         for idx, importance in zip(selected_indices, importances):
-            if idx >= len(all_rules):
+            if idx >= len(self.all_rules):
                 continue
-                
-            rule = all_rules[idx]
-            
-            # Find samples that satisfy this rule
-            mask = self._evaluate_rule(X, rule['conditions'])
-            
+
+            rule = self.all_rules[idx]
+            mask = self._evaluate_rule(X, rule["conditions"])
+
             if mask.sum() == 0:
                 continue
-            
-            # Determine majority stage
+
             stages_for_rule = stage_labels[mask]
-            majority_stage = pd.Series(stages_for_rule).mode()[0] if len(stages_for_rule) > 0 else 'Unknown'
-            
-            # Determine prediction category
-            avg_rul = np.mean(y_pred[mask])
-            if avg_rul < 60000:
-                prediction = 'Critical'
-            elif avg_rul < 120000:
-                prediction = 'Warning'
-            else:
-                prediction = 'Normal'
-            
-            # Format conditions as string
+            majority_stage = (
+                pd.Series(stages_for_rule).mode()[0]
+                if len(stages_for_rule) > 0
+                else "Unknown"
+            )
+
+            avg_rul = float(np.mean(y_pred[mask]))
+            prediction = self._prediction_from_rul(avg_rul)
+
             condition_strs = []
-            for feat, op, thresh in rule['conditions']:
-                condition_strs.append(f"{feat} {op} {thresh:.3f}")
-            
+            for feat, op, thresh in rule["conditions"]:
+                condition_strs.append(f"{feat} {op} {thresh:.6f}")
+
             categorized_rule = {
-                'rule_id': f"RULE_{len(categorized):03d}",
-                'stage': majority_stage,
-                'conditions': rule['conditions'],
-                'condition_str': ' AND '.join(condition_strs),
-                'prediction': prediction,
-                'importance': float(importance),
-                'support': int(mask.sum()),
-                'avg_rul': float(avg_rul),
-                'coverage': float(mask.sum() / len(mask))
+                "rule_id": f"RULE_{len(categorized):03d}",
+                "stage": majority_stage,
+                "conditions": rule["conditions"],
+                "condition_str": " AND ".join(condition_strs),
+                "prediction": prediction,
+                "importance": float(importance),
+                "support": int(mask.sum()),
+                "avg_rul": avg_rul,
+                "coverage": float(mask.sum() / len(mask)),
+                "specificity": self._rule_specificity(rule["conditions"]),
             }
-            
+
             categorized.append(categorized_rule)
-        
-        # Sort by importance
-        categorized.sort(key=lambda x: x['importance'], reverse=True)
-        
+
+        categorized.sort(
+            key=lambda x: (x["importance"], x["specificity"], -x["coverage"]),
+            reverse=True,
+        )
         return categorized
     
     def _evaluate_rule(self, X, conditions):
@@ -416,22 +425,19 @@ class RuleFit:
 
 
 # Convenience function for notebook use
-def extract_rules_with_rulefit(model, X_test, y_test, stage_labels, feature_names, 
-                                n_estimators=100, max_depth=3):
+def extract_rules_with_rulefit(
+    model,
+    X_test,
+    y_test,
+    stage_labels,
+    feature_names,
+    n_estimators=100,
+    max_depth=3,
+    target_scaler=None,
+    stage_boundaries=None,
+):
     """
-    Wrapper function to extract rules using RuleFit
-    
-    Args:
-        model: Trained PyTorch model
-        X_test: Test features (n_samples, seq_length, n_features)
-        y_test: Test targets (actual RUL cycles)
-        stage_labels: Stage labels for each sample
-        feature_names: List of feature names
-        n_estimators: Number of trees
-        max_depth: Maximum tree depth
-        
-    Returns:
-        rulefit: Fitted RuleFit object with extracted rules
+    Wrapper function to extract rules using RuleFit.
     """
     rulefit = RuleFit(
         model=model,
@@ -439,9 +445,10 @@ def extract_rules_with_rulefit(model, X_test, y_test, stage_labels, feature_name
         n_estimators=n_estimators,
         max_depth=max_depth,
         memory_par=0.01,
-        random_state=42
+        random_state=42,
+        target_scaler=target_scaler,
+        stage_boundaries=stage_boundaries,
     )
-    
+
     rulefit.fit(X_test, y_test, stage_labels)
-    
     return rulefit
